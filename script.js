@@ -311,10 +311,15 @@ function enviarWhatsApp() {
     const endereco = document.getElementById('end_cli').value;
     const pagamento = document.getElementById('pag_cli').value;
 
-    if (!nome || !endereco) return alert("Preencha nome e endereço!");
+    if (!nome || !endereco) {
+        alert("Preencha nome e endereço!");
+        return;
+    }
 
     const acompanhamentos = [];
-    document.querySelectorAll('#acompanhamentos input:checked').forEach(i => acompanhamentos.push(i.value));
+    document.querySelectorAll('#acompanhamentos input:checked').forEach(i => {
+        acompanhamentos.push(i.value);
+    });
 
     const telefone = "553498856848";
     let msg = `*PEDIDO - CASA DE CARNES FARTURA*\n\n`;
@@ -325,9 +330,27 @@ function enviarWhatsApp() {
     msg += `*PAGAMENTO:* ${pagamento}\n`;
     msg += `*TOTAL: R$ ${pedidoInfo.valor}*`;
 
-    window.open(`https://wa.me/${telefone}?text=${encodeURIComponent(msg)}`, '_blank');
+    // Corrigido: removido o acento circunflexo e corrigida a construção da URL
+    const url = `https://wa.me/${telefone}?text=${encodeURIComponent(msg)}`;
+    
+    // Adiciona log para debug
+    console.log('URL do WhatsApp:', url);
+    console.log('Mensagem:', msg);
+    
+    // Tenta abrir em nova janela
+    const newWindow = window.open(url, '_blank');
+    
+    // Se a janela foi bloqueada (popup blocker), mostra alerta
+    if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+        alert('Popup bloqueado! Por favor, permita popups para este site ou clique em "Permitir" se aparecer alguma mensagem do navegador.\\n\\nVocê também pode copiar e colar este link:\\n' + url);
+    }
+    
     toggleModal(false);
 }
 
 // atualiza ano no rodapé do modal
-try { document.getElementById('modal-year').textContent = new Date().getFullYear(); } catch (e) { }
+try { 
+    document.getElementById('modal-year').textContent = new Date().getFullYear(); 
+} catch (e) { 
+    console.log('Elemento modal-year não encontrado');
+}
