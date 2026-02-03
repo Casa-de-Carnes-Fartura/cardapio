@@ -4,6 +4,27 @@ const SHEET_NAME = 'Sheet1';
 
 let pedidoInfo = { tamanho: 'M', valor: '19,00' };
 
+// Função auxiliar para limpar valores monetários
+function limparValorMonetario(valor) {
+    if (!valor) return '0.00';
+    
+    let valorLimpo = valor.toString();
+    
+    // Remove "R$" e espaços
+    valorLimpo = valorLimpo.replace(/R\$/gi, '').trim();
+    
+    // Remove todos os pontos (separadores de milhar)
+    valorLimpo = valorLimpo.replace(/\./g, '');
+    
+    // Substitui vírgula por ponto para conversão decimal
+    valorLimpo = valorLimpo.replace(',', '.');
+    
+    // Garante que é um número válido
+    const numero = parseFloat(valorLimpo);
+    
+    return isNaN(numero) ? '0.00' : numero.toFixed(2);
+}
+
 async function fetchSheetGviz(sheetId, sheetName = 'Sheet1') {
     const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}`;
     const res = await fetch(url);
@@ -274,14 +295,22 @@ function renderPriceCards(pairs) {
     }
     let html = '';
     pairs.forEach((p, i) => {
+        // Limpa o valor para armazenar no data-price
+        const valorLimpo = limparValorMonetario(p.price);
         const active = i === 0 ? ' active' : '';
-        html += `<div class="price-card${active}" data-price="${p.price}" onclick="selectSize('${p.size}', this)">` +
+        html += `<div class="price-card${active}" data-price="${valorLimpo}" onclick="selectSize('${p.size}', this)">` +
             `<span class="size-tag">${p.size}</span>` +
             `<span class="price-value">${p.price}</span>` +
             `</div>`;
     });
     container.innerHTML = html;
-    if (pairs.length > 0) pedidoInfo = { tamanho: pairs[0].size, valor: pairs[0].price };
+    if (pairs.length > 0) {
+        const primeiroValorLimpo = limparValorMonetario(pairs[0].price);
+        pedidoInfo = { 
+            tamanho: pairs[0].size, 
+            valor: primeiroValorLimpo 
+        };
+    }
     console.log('Price cards rendered. Initial pedidoInfo:', pedidoInfo);
 }
 
@@ -299,6 +328,12 @@ function selectSize(tam, preco, element) {
     if (!finalPrice && element) {
         finalPrice = element.dataset.price || (element.querySelector('.price-value') || {}).textContent || finalPrice;
     }
+    
+    // Limpa o valor antes de armazenar
+    if (finalPrice) {
+        finalPrice = limparValorMonetario(finalPrice);
+    }
+    
     pedidoInfo = { tamanho: tam, valor: finalPrice || pedidoInfo.valor };
 }
 
@@ -310,7 +345,7 @@ function enviarWhatsApp() {
     const nome = document.getElementById('nome_cli').value;
     const endereco = document.getElementById('end_cli').value;
     const pagamento = document.getElementById('pag_cli').value;
-    const quantidade = parseInt(document.getElementById('quantidade_marmita').value); // Adicionado
+    const quantidade = parseInt(document.getElementById('quantidade_marmita').value);
 
     if (!nome || !endereco) {
         alert("Preencha nome e endereço!");
@@ -331,25 +366,36 @@ function enviarWhatsApp() {
 
     const telefone = "553498856848";
     
-    const valorUnitario = parseFloat(pedidoInfo.valor.replace(',', '.')); // Convertido para float
-    const valorTotal = (valorUnitario * quantidade).toFixed(2).replace('.', ','); // Cálculo e formatação
-
-    // CORREÇÃO AQUI: usar concatenação de strings simples
-    const msg = "*PEDIDO - CASA DE CARNES FARTURA*\n\n" +
-                "*CLIENTE:* " + nome + "\n" +
-                "*ENDEREÇO:* " + endereco + "\n\n" +
-                "*ITEM:* " + quantidade + " Marmitex (" + pedidoInfo.tamanho + ")\n" + // Quantidade adicionada
-                "*ACOMPANHAMENTOS:* " + acompanhamentosMsg + "\n\n" +
-                "*PAGAMENTO:* " + pagamento + "\n" +
-                "*TOTAL: R$ " + valorTotal + "*"; // Valor total calculado
-
-    const url = "https://wa.me/" + telefone + "?text=" + encodeURIComponent(msg);
+    // CORREÇÃO: Usar a função limparValorMonetario para garantir valor numérico
+    const valorUnitario = parseFloat(limparValorMonetario(pedidoInfo.valor));
     
-    // Debug: mostrar no console
+    // Validação do valor
+    if (isNaN(valorUnitario) || valorUnitario <= 0) {
+        console.error('Valor unitário inválido:', pedidoInfo.valor);
+        alert('Erro no valor do produto. Entre em contato com o restaurante.');
+        return;
+    }
+    
+    // Calcula total
+    const valorTotal = (valorUnitario * quantidade).toFixed(2).replace('.', ',');
+    
+    // Formata valor unitário para exibição
+    const valorUnitarioFormatado = valorUnitario.toFixed(2).replace('.', ',');
+
+    const msg = `*PEDIDO - CASA DE CARNES FARTURA*\n\n` +
+                `*CLIENTE:* ${nome}\n` +
+                `*ENDEREÇO:* ${endereco}\n\n` +
+                `*ITEM:* ${quantidade} Marmitex (${pedidoInfo.tamanho})\n` +
+                `*VALOR UNITÁRIO:* R$ ${valorUnitarioFormatado}\n` +
+                `*ACOMPANHAMENTOS:* ${acompanhamentosMsg}\n\n` +
+                `*PAGAMENTO:* ${pagamento}\n` +
+                `*TOTAL: R$ ${valorTotal}*`;
+
+    const url = `https://wa.me/${telefone}?text=${encodeURIComponent(msg)}`;
+    
     console.log('Mensagem WhatsApp:', msg);
     console.log('URL gerada:', url);
     
-    // Testar se a URL está correta - abrir em nova janela
     try {
         window.open(url, '_blank');
     } catch (e) {
