@@ -321,13 +321,13 @@ function enviarWhatsApp() {
     msg += `*CLIENTE:* ${nome}\n`;
     msg += `*ENDEREÇO:* ${endereco}\n\n`;
     msg += `*ITEM:* Marmitex (${pedidoInfo.tamanho})\n`;
-    msg += `*ACOMPANHAMENTOS:* ${accompanhamentos.join(', ')}\n\n`;
+    msg += `*ACOMPANHAMENTOS:* ${acompanhamentos.join(', ')}\n\n`;
     msg += `*PAGAMENTO:* ${pagamento}\n`;
     msg += `*TOTAL: R$ ${pedidoInfo.valor}*`;
 
     window.open(`https://wa.me/${telefone}?text=${encodeURIComponent(msg)}`, '_blank');
     toggleModal(false);
 }
+
 // atualiza ano no rodapé do modal
 try { document.getElementById('modal-year').textContent = new Date().getFullYear(); } catch (e) { }
-
