@@ -322,27 +322,28 @@ function enviarWhatsApp() {
     });
 
     const telefone = "553498856848";
-    let msg = `*PEDIDO - CASA DE CARNES FARTURA*\n\n`;
-    msg += `*CLIENTE:* ${nome}\n`;
-    msg += `*ENDEREÇO:* ${endereco}\n\n`;
-    msg += `*ITEM:* Marmitex (${pedidoInfo.tamanho})\n`;
-    msg += `*ACOMPANHAMENTOS:* ${acompanhamentos.join(', ')}\n\n`;
-    msg += `*PAGAMENTO:* ${pagamento}\n`;
-    msg += `*TOTAL: R$ ${pedidoInfo.valor}*`;
+    
+    // CORREÇÃO AQUI: usar concatenação de strings simples
+    const msg = "*PEDIDO - CASA DE CARNES FARTURA*\n\n" +
+                "*CLIENTE:* " + nome + "\n" +
+                "*ENDEREÇO:* " + endereco + "\n\n" +
+                "*ITEM:* Marmitex (" + pedidoInfo.tamanho + ")\n" +
+                "*ACOMPANHAMENTOS:* " + acompanhamentos.join(', ') + "\n\n" +
+                "*PAGAMENTO:* " + pagamento + "\n" +
+                "*TOTAL: R$ " + pedidoInfo.valor + "*";
 
-    // Corrigido: removido o acento circunflexo e corrigida a construção da URL
-    const url = `https://wa.me/${telefone}?text=${encodeURIComponent(msg)}`;
+    const url = "https://wa.me/" + telefone + "?text=" + encodeURIComponent(msg);
     
-    // Adiciona log para debug
-    console.log('URL do WhatsApp:', url);
-    console.log('Mensagem:', msg);
+    // Debug: mostrar no console
+    console.log('Mensagem WhatsApp:', msg);
+    console.log('URL gerada:', url);
     
-    // Tenta abrir em nova janela
-    const newWindow = window.open(url, '_blank');
-    
-    // Se a janela foi bloqueada (popup blocker), mostra alerta
-    if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
-        alert('Popup bloqueado! Por favor, permita popups para este site ou clique em "Permitir" se aparecer alguma mensagem do navegador.\\n\\nVocê também pode copiar e colar este link:\\n' + url);
+    // Testar se a URL está correta - abrir em nova janela
+    try {
+        window.open(url, '_blank');
+    } catch (e) {
+        console.error('Erro ao abrir WhatsApp:', e);
+        alert('Erro ao abrir WhatsApp. Tente novamente ou copie o link:\n' + url);
     }
     
     toggleModal(false);
