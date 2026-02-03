@@ -8,16 +8,24 @@ let pedidoInfo = { tamanho: 'M', valor: '19,00' };
 function limparValorMonetario(valor) {
     if (!valor) return '0.00';
     
-    let valorLimpo = valor.toString();
+    let valorLimpo = valor.toString().trim();
     
     // Remove "R$" e espaços
     valorLimpo = valorLimpo.replace(/R\$/gi, '').trim();
     
-    // Remove todos os pontos (separadores de milhar)
-    valorLimpo = valorLimpo.replace(/\./g, '');
+    // Verifica se o número tem ponto como separador de milhar e vírgula como decimal (formato brasileiro)
+    if (valorLimpo.includes('.') && valorLimpo.includes(',')) {
+        // Formato: 1.900,00 - Remove pontos de milhar e converte vírgula para ponto decimal
+        valorLimpo = valorLimpo.replace(/\./g, ''); // Remove pontos (1.900 -> 1900)
+        valorLimpo = valorLimpo.replace(',', '.'); // Converte vírgula para ponto (1900,00 -> 1900.00)
+    } else if (valorLimpo.includes(',')) {
+        // Formato: 19,00 - Apenas converte vírgula para ponto
+        valorLimpo = valorLimpo.replace(',', '.'); // Converte vírgula para ponto
+    }
+    // Se não tem vírgula, assume que já está no formato correto ou é formato americano
     
-    // Substitui vírgula por ponto para conversão decimal
-    valorLimpo = valorLimpo.replace(',', '.');
+    // Remove qualquer caractere não numérico exceto ponto
+    valorLimpo = valorLimpo.replace(/[^\d.]/g, '');
     
     // Garante que é um número válido
     const numero = parseFloat(valorLimpo);
