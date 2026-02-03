@@ -317,12 +317,12 @@ function enviarWhatsApp() {
     document.querySelectorAll('#acompanhamentos input:checked').forEach(i => acompanhamentos.push(i.value));
 
     const telefone = "553498856848";
-    let msg = `*PEDIDO - CASA DE CARNES FARTURA*\\n\\n`;
-    msg += `*CLIENTE:* ${nome}\\n`;
-    msg += `*ENDEREÇO:* ${endereco}\\n\\n`;
-    msg += `*ITEM:* Marmitex (${pedidoInfo.tamanho})\\n`;
-    msg += `*ACOMPANHAMENTOS:* ${acompanhamentos.join(', ')}\\n\\n`;
-    msg += `*PAGAMENTO:* ${pagamento}\\n`;
+    let msg = `*PEDIDO - CASA DE CARNES FARTURA*\n\n`;
+    msg += `*CLIENTE:* ${nome}\n`;
+    msg += `*ENDEREÇO:* ${endereco}\n\n`;
+    msg += `*ITEM:* Marmitex (${pedidoInfo.tamanho})\n`;
+    msg += `*ACOMPANHAMENTOS:* ${accompanhamentos.join(', ')}\n\n`;
+    msg += `*PAGAMENTO:* ${pagamento}\n`;
     msg += `*TOTAL: R$ ${pedidoInfo.valor}*`;
 
     window.open(`https://wa.me/${telefone}?text=${encodeURIComponent(msg)}`, '_blank');
