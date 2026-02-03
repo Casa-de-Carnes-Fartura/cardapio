@@ -310,6 +310,7 @@ function enviarWhatsApp() {
     const nome = document.getElementById('nome_cli').value;
     const endereco = document.getElementById('end_cli').value;
     const pagamento = document.getElementById('pag_cli').value;
+    const quantidade = parseInt(document.getElementById('quantidade_marmita').value); // Adicionado
 
     if (!nome || !endereco) {
         alert("Preencha nome e endereço!");
@@ -321,16 +322,26 @@ function enviarWhatsApp() {
         acompanhamentos.push(i.value);
     });
 
+    const totalAcompanhamentos = document.querySelectorAll('#acompanhamentos .item-row input[type="checkbox"]').length;
+    let acompanhamentosMsg = acompanhamentos.join(', ');
+
+    if (acompanhamentos.length === totalAcompanhamentos) {
+        acompanhamentosMsg = 'Marmitex Completa';
+    }
+
     const telefone = "553498856848";
     
+    const valorUnitario = parseFloat(pedidoInfo.valor.replace(',', '.')); // Convertido para float
+    const valorTotal = (valorUnitario * quantidade).toFixed(2).replace('.', ','); // Cálculo e formatação
+
     // CORREÇÃO AQUI: usar concatenação de strings simples
     const msg = "*PEDIDO - CASA DE CARNES FARTURA*\n\n" +
                 "*CLIENTE:* " + nome + "\n" +
                 "*ENDEREÇO:* " + endereco + "\n\n" +
-                "*ITEM:* Marmitex (" + pedidoInfo.tamanho + ")\n" +
-                "*ACOMPANHAMENTOS:* " + acompanhamentos.join(', ') + "\n\n" +
+                "*ITEM:* " + quantidade + " Marmitex (" + pedidoInfo.tamanho + ")\n" + // Quantidade adicionada
+                "*ACOMPANHAMENTOS:* " + acompanhamentosMsg + "\n\n" +
                 "*PAGAMENTO:* " + pagamento + "\n" +
-                "*TOTAL: R$ " + pedidoInfo.valor + "*";
+                "*TOTAL: R$ " + valorTotal + "*"; // Valor total calculado
 
     const url = "https://wa.me/" + telefone + "?text=" + encodeURIComponent(msg);
     
